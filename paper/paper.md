@@ -7,7 +7,7 @@ tags:
 authors:
   - name: Andy Nowacki
     orcid: 0000-0001-7669-7383
-    equal-contrib: true
+#    equal-contrib: true
     affiliation: 1
   - name: James Panton
     orcid: 0000-0002-1345-9406
