@@ -151,7 +151,7 @@ def write_seismic_netcdf_files(
     return [filebase + f"{ifile}.nc" for ifile in range(nfiles)]
 
 
-def random_model(npts, nlayers):
+def random_model(npts, nlayers, density=False):
     """
     Create a random model with fields t, c_hist and u_xyz, with named
     compositions
@@ -168,6 +168,10 @@ def random_model(npts, nlayers):
         "u_xyz": np.random.rand(nlayers, npts, 3).astype(value_type),
         "c_hist": np.random.rand(2, nlayers, npts).astype(value_type),
     }
+
+    if density:
+        fields["density"] = np.random.rand(nlayers, npts).astype(value_type)
+
     c_hist_names = ["harzburgite", "lherzolite"]
 
     return lon, lat, r, fields, c_hist_names
@@ -201,6 +205,17 @@ class TestTerraModelReadNetCDF(unittest.TestCase):
         self.assertTrue(
             np.all(fields["c_hist"][1, :, :] == model.get_field("c_hist")[:, :, 1])
         )
+
+    def test_terra_model_read_netcdf_no_composition(self):
+        file = os.path.join(
+            os.path.dirname(os.path.realpath(__file__)), "data", "model_no_c_hist.comp"
+        )
+        m = terra_model.read_netcdf([file])
+        self.assertTrue(m.has_field("t"))
+        self.assertTrue(m.has_field("u_xyz"))
+        self.assertTrue(not m.has_field("c_hist"))
+        self.assertTrue(np.all(m.get_field("u_xyz") == 0))
+        self.assertTrue(np.all(m.get_field("t") == 0))
 
 
 if __name__ == "__main__":

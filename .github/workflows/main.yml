@@ -6,16 +6,16 @@ on: [push, pull_request, workflow_dispatch]
 jobs:
   indent:
     name: indent
-    runs-on: [ubuntu-20.04]
+    runs-on: [ubuntu-latest]
 
     strategy:
       matrix:
         python-versions: ['3.10']
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v5
     - name: Set up Python ${{ matrix.python-versions }}
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v6
       with:
         python-version: ${{ matrix.python-versions }}
     - name: make indent
@@ -24,7 +24,7 @@ jobs:
         ./contrib/utilities/indent
         git diff > changes-astyle.diff
     - name: archive indent results
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: changes-astyle.diff
         path: changes-astyle.diff
@@ -34,41 +34,60 @@ jobs:
 
   test:
     name: test
-    runs-on: [ubuntu-20.04]
+    runs-on: [ubuntu-latest]
 
     strategy:
       matrix:
-        python-versions: ['3.8', '3.9', '3.10']
+        python-versions: ['3.9', '3.10', '3.11', '3.12']
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v5
     - name: Set up Python ${{ matrix.python-versions }}
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v6
       with:
         python-version: ${{ matrix.python-versions }}
     - name: setup
+      id: setup
       run: |
         # cartopy requires libgeos-dev
         sudo apt update && sudo apt install --yes \
          libgeos-dev
         python -m pip install --upgrade pip
         python --version
+        python -m pip list
+        python -m pip install pooch
+        echo CACHE=$(python -c 'import pooch; print(pooch.os_cache("terratools"))') >> $GITHUB_OUTPUT
+    - name: Figshare restore
+      uses: actions/cache/restore@v4
+      id: restore-from-figshare
+      with:
+        path: ${{ steps.setup.outputs.CACHE }}
+        key: cache-${{ runner.os }}-${{ github.run_id }}
+        restore-keys: |
+          cache-${{ runner.os }}-  
+          cache-
     - name: test
       run: |
         PYTHON=python ./test.sh
+    - name: Figshare cache data
+      uses: actions/cache/save@v4
+      id: cache-figshare
+      with:
+        path: ${{ steps.setup.outputs.CACHE }}
+        key: cache-${{ runner.os }}-${{ github.run_id }}
 
   test_cartopy:
     name: Test no Cartopy
-    runs-on: [ubuntu-20.04]
+    runs-on: [ubuntu-latest]
 
     strategy:
       matrix:
-        python-versions: ['3.8', '3.9', '3.10']
+        python-versions: ['3.9', '3.10', '3.11', '3.12']
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v5
     - name: Set up Python ${{ matrix.python-versions }}
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v6
       with:
         python-version: ${{ matrix.python-versions }}
     - name: setup
@@ -76,6 +95,7 @@ jobs:
         python -m pip install --upgrade pip
         python --version
         python -m pip install -e .
+        python -m pip list
     - name: test
       run: |
         python -m unittest discover ./tests

@@ -1,0 +1,35 @@
+We haven't kept a good changelog up to v1.0, but main features are summarised here.
+
+  ## [1.0.0] - 2024-03-08
+
+_First release._
+  - Read TERRA NetCDF files into a TerraModel object (or TerraModelLayer object if single layer)
+  - Built in methods provide simple access to scalar and vector fields
+  - Methods for plotting profiles, layers, slices and flow fields
+  - Calculate spherical harmonic coefficients of field using Healpy
+  - Tools for generating tables of seismic properties for arbitrary compositions
+  - Predict seismic properties of TerraModel
+  - Method for detecting mantle plume in TerraModel 
+
+  ## [1.0.1] - 2024-03-12
+
+  - Patch to update the minimum required version of scikit-learn to 1.3.0 to
+  include HDBSCAN. 
+
+  ## [1.0.2] - 2024-03-12
+
+  - Patch to allow adding of new fields with arbitrary name to the TerraModel.
+
+  ## [1.1.0]  - 2024-06-06
+
+  - Allowing passing fig and ax handles to plotting functions.
+  - Return colorbar from plotting functions if requested with `return_cbar=True`
+  - Calculate spherical harmonics for single component of vector field
+  - Plotting of single component of vector fields
+
+  ## [1.1.1-DEV]
+
+  - Fix bug in reading model files without composition
+
+  ## [1.2.0-DEV] 
+  - Add feature for calculating plume buoyancy flux
